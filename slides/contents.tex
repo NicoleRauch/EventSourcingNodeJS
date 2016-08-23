@@ -97,16 +97,16 @@ How to improve this?
 \begin{frame}[fragile]{Event Sourcing}
 
 \begin{onlyenv}<1>
-\includegraphics[width=.7\textwidth]{../EventSourcing1.png}
+\includegraphics[width=.7\textwidth]{../EventSourcing1.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<2>
-\includegraphics[width=.7\textwidth]{../EventSourcing2.png}
+\includegraphics[width=.7\textwidth]{../EventSourcing2.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<3-4>
 \begin{minipage}{.7\textwidth}
-\includegraphics[width=\textwidth]{../EventSourcing3.png}
+\includegraphics[width=\textwidth]{../EventSourcing3.pdf}
 \end{minipage} \hfill
 \end{onlyenv}
 \begin{onlyenv}<3>
@@ -131,7 +131,7 @@ Book ticket
 \end{onlyenv}
 
 \begin{onlyenv}<5>
-\includegraphics[width=.7\textwidth]{../EventSourcing4.png}
+\includegraphics[width=.7\textwidth]{../EventSourcing4.pdf}
 \end{onlyenv}
 
 \end{frame}
@@ -159,19 +159,19 @@ Let's understand how node.js works
 \begin{frame}[fragile]{Node.js}
 
 \begin{onlyenv}<1>
-\includegraphics[width=.7\textwidth]{../Nodejs1.png}
+\includegraphics[width=.7\textwidth]{../Nodejs1.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<2>
-\includegraphics[width=.7\textwidth]{../Nodejs2.png}
+\includegraphics[width=.7\textwidth]{../Nodejs2.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<3>
-\includegraphics[width=.7\textwidth]{../Nodejs3.png}
+\includegraphics[width=.7\textwidth]{../Nodejs3.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<4>
-\includegraphics[width=.7\textwidth]{../Nodejs4.png}
+\includegraphics[width=.7\textwidth]{../Nodejs4.pdf}
 \end{onlyenv}
 
 \hfill 
@@ -183,6 +183,117 @@ Let's understand how node.js works
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Mongo DB}
+
+\begin{itemize}
+\item No transactions
+\item No optimistic locking
+\onslide+<2->
+\item We implemented optimistic locking ourselves
+\end{itemize}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Mongo DB}
+
+\begin{center}
+
+\begin{onlyenv}<1>
+\includegraphics[width=.85\textwidth]{../OptimisticLocking1.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+\includegraphics[width=.85\textwidth]{../OptimisticLocking2.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<3>
+\includegraphics[width=.85\textwidth]{../OptimisticLocking3.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<4>
+\includegraphics[width=.85\textwidth]{../OptimisticLocking4.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<5>
+\includegraphics[width=.85\textwidth]{../OptimisticLocking5.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<6>
+\includegraphics[width=.85\textwidth]{../OptimisticLocking6.pdf}
+\end{onlyenv}
+
+\end{center}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Our Initial Architecture}
+
+\includegraphics[width=.7\textwidth]{../Nodejs3.pdf}
+
+\onslide+<2->
+
+\begin{itemize}
+\item Request comes in, reads \& writes data from/to DB, returns
+\item Nothing$^*$ is kept in memory between requests
+\end{itemize}
+
+{ \tiny $^*$ Apart from the caching that is done by \texttt{require} }
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Event Sourcing Without Global State?}
+
+\includegraphics[width=.5\textwidth]{../EventSourcing4.pdf}
+
+\onslide+<2->
+
+\begin{itemize}
+\item What about the read and write models?
+\end{itemize}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Working Hypothesis}
+
+\textbf{Rough Estimations:} \\[.7em]
+We expected a couple hundred events altogether
+
+\onslide+<2->
+\vspace{5em}
+
+\textbf{Working Hypothesis:} \\[.7em]
+We can hydrate the models from the event store on each request
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{On Opening the Registration}
+
+\onslide+<2->
+
+Registration began...
+
+\onslide+<3->
+
+\vspace{3em}
+
+~ \hspace{10em} ... but nobody registered!
+ 
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{What was going on?}
+
+
+
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\begin{frame}[fragile]{}
 
 %\end{frame}
@@ -190,60 +301,6 @@ Let's understand how node.js works
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Implementation in Node.js and Mongo-DB
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-EventSourcing ohne globalen State
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Node: Single-Threaded, aber trotzdem ... (was?)
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Implementierung Optimistic Locking
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Implementierung Event Sourcing
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-{
-\LARGE
-
-Outcome
-}
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Registration began
-                  
-                  but nobody registered!
-                  
-\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{}
