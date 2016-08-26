@@ -288,9 +288,83 @@ Registration began...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{What was going on?}
 
+Remember: 2-phase registration (reservation -> registration)
 
+First user came in:
 
+\includegraphics[width=.4\textwidth]{../Nodejs3.pdf}
 
+Reading from DB parallelized it, so more users came in and read from DB
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{What was going on?}
+
+First user was able to persist her reservation:
+
+\includegraphics[width=.4\textwidth]{../OptimisticLocking5.pdf}
+
+All subsequent users produced conflicts: 
+
+\includegraphics[width=.4\textwidth]{../OptimisticLocking6.pdf}
+
+And retried.
+
+And got conflicts again.
+
+And retried again.
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{}
+
+Because in fact it was
+
+\includegraphics[width=.4\textwidth]{../OptimisticLocking6.pdf}
+
+so we had a self-propelling disaster.
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{The End}
+
+After 25 minutes, I shut down the server.
+                  
+\onslide+<2->
+                  
+\vspace{3em}
+
+~ \hspace{10em} Nobody had been able to register.
+                  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Analysis I}
+
+Hydrating the read and write models took longer than we had expected.
+                  
+\onslide+<2->
+                  
+\vspace{3em}
+
+$\Longrightarrow$ We must cache the read and write models.
+                  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Analysis II}
+
+Because of parallelization due to the slow request processing, it was almost impossible for users to get through.
+
+\onslide+<2->
+                  
+\vspace{3em}
+
+$\Longrightarrow$ We must control parallelization.
+                  
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -302,146 +376,12 @@ Registration began...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Ablauf skizzieren. 
-                  
-                  First user came in
-                  reading from DB parallelized it
-                  somebody else modified the DB
-                  first user could not save
-                  retry
-                  same happened again, and again
-                  
-                  reading of read and write models was slow
-                  so many other connections came through and modified DB
-                  
-                  self-propelling disaster
-                  
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-After 25 minutes, I shut down the server.
-                  
-                  Nobody had been able to register.
-                  
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-{
-\LARGE
-
-Improvements
-}
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Analysis: Because of parallelization, it was impossible for one user to get through.
-                  
-                  We must control parallelization.
-                  
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
-
-Nachteil: Jetzt ist keine Parallelisierung von Prozessen mehr möglich
-
-\end{frame}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Nested Components}
+\begin{frame}[fragile]{Tradeoffs}
 
-\vspace{-2em}
-\begin{lstlisting}{JavaScript}
-export default class extends Component {
-  render() {
-    return (
-      <div>
-        <p>Nested Component with</p>
-        <SimpleComponent />
-      </div>
-    ); }}
-\end{lstlisting}
-
-\vspace{-0.5em}
-
-\begin{overlayarea}{\linewidth}{3cm}
-
-\begin{onlyenv}<2-5,7->
-\begin{lstlisting}{JavaScript}
-const result = shallowRender(<NestedComponent />);
-\end{lstlisting}
-\end{onlyenv}
-
-\begin{onlyenv}<2>
-\vspace{-0.5em}
-\begin{lstlisting}{JavaScript}
-expect(JSON.stringify(result)).to.eql('{"type":"div","key":null,"ref":null,"props":{"children":' +
-  '[{"type":"p","key":null,"ref":null,"props":{"children":"Nested Component with"},"_owner":null,"_store":{}},' +
-  '{"key":null,"ref":null,"props":{},"_owner":null,"_store":{}}]},' +
-  '"_owner":null,"_store":{}}');
-\end{lstlisting}
-\end{onlyenv}
-
-\begin{onlyenv}<3-5>
-\vspace{-0.5em}
-\begin{lstlisting}{JavaScript}
-expect(result.type).to.be('div');
-expect(result.props.children.length).to.eql(2);
-\end{lstlisting}
-\end{onlyenv}
-
-\begin{onlyenv}<4-5>
-\vspace{-0.5em}
-\begin{lstlisting}{JavaScript}
-expect(result.props.children[0].type).to.eql('p');
-\end{lstlisting}
-\end{onlyenv}
-
-\begin{onlyenv}<5>
-\vspace{-0.5em}
-\begin{lstlisting}{JavaScript}
-expect(result.props.children[0].props.children).to.eql('Nested Component with');
-\end{lstlisting}
-\end{onlyenv}
-
-\begin{onlyenv}<6>
-\vspace{-0.5em}
-\begin{center}
-
-\textcolor{airbnb}{\textbf{\LARGE Enzyme}}
-\end{center}
-\end{onlyenv}
-
-\begin{onlyenv}<7->
-\vspace{-0.5em}
-\begin{lstlisting}{JavaScript}
-expect(JSON.stringify(result.props.children[1])).to.eql(
-        '{"key":null,"ref":null,"props":{},"_owner":null,"_store":{}}');
-\end{lstlisting}
-\end{onlyenv}
-
-\begin{onlyenv}<8->
-\vspace{-0.5em}
-\begin{lstlisting}{JavaScript}
-import SimpleComponent from "../src/SimpleComponent";
-
-expect(result.props.children[1].type).to.eql(SimpleComponent);
-\end{lstlisting}
-\end{onlyenv}
-
-\end{overlayarea}
-
+We cannot run multiple node.js processes in parallel any more.
 
 \end{frame}
 
