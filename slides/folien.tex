@@ -75,7 +75,7 @@
 \newcommand{\SPACE}{0em}
 \newcommand{\greyedout}{black!50}
 
-\newenvironment{highlight}[1]{\begin{lstlisting}[basicstyle=\footnotesize\ttfamily\alt<#1>{}{\color{\greyedout}}]{JavaScript}}{\end{lstlisting}}
+\lstnewenvironment{highlight}[1]{\lstset{basicstyle=\footnotesize\ttfamily\alt<#1>{}{\color{\greyedout}}}}{}
 
 \begin{document}
 {

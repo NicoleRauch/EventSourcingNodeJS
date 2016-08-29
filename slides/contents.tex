@@ -360,53 +360,53 @@ $\Longrightarrow$ We must cache the read and write models.
 \renewcommand{\SPACE}{-0.9em}
 
 \onslide+<1->
-\begin{highlight}{1}[basicstyle=\footnotesize\ttfamily\alt<1>{}{\color{\greyedout}}]{JavaScript}
-function getGlobalEventStoreForWriting(cacheKey, callback) {
-\end{lstlisting}
+\begin{highlight}{1}
+function getGlobalEventStoreForWriting(url, callback) {
+\end{highlight}
 %%
 \onslide+<2->
 \vspace{\SPACE}
-\begin{lstlisting}{JavaScript}
-  const cachedStore = cache.get(cacheKey);
+\begin{highlight}{2}
+  const cachedStore = cache.get(url);
   if (cachedStore) {
     return callback(null, cachedStore);
   }
-\end{lstlisting}
+\end{highlight}
 %%
 \onslide+<3->
 \vspace{\SPACE}
-\begin{lstlisting}{JavaScript}
+\begin{highlight}{3}
   eventstore.getEventStore(url, function (err, eventStore) {
     if (err || !eventStore) { return callback(err); }
-\end{lstlisting}
+\end{highlight}
 %%
 \onslide+<4->
 \vspace{\SPACE}
-\begin{lstlisting}{JavaScript}
-    const cachedStore2 = cache.get(cacheKey);
+\begin{highlight}{4}
+    const cachedStore2 = cache.get(url);
     if (cachedStore2) {
       return callback(null, cachedStore2);
     }
-\end{lstlisting}
+\end{highlight}
 %%
 \onslide+<5->
 \vspace{\SPACE}
-\begin{lstlisting}{JavaScript}
-    cache.set(cacheKey, eventStore);
+\begin{highlight}{5}
+    cache.set(url, eventStore);
     callback(null, eventStore);
-\end{lstlisting}
+\end{highlight}
 %%
 \onslide+<3->
 \vspace{\SPACE}
-\begin{lstlisting}{JavaScript}
+\begin{highlight}{3}
   });
-\end{lstlisting}
+\end{highlight}
 %%
 \onslide+<1->
 \vspace{\SPACE}
-\begin{lstlisting}{JavaScript}
+\begin{highlight}{1}
 }
-\end{lstlisting}
+\end{highlight}
 
 
 \end{frame}
