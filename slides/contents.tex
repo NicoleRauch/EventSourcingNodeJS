@@ -342,9 +342,9 @@ After 25 minutes, I shut down the server.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Analysis I}
+\begin{frame}[fragile]{Problem I}
 
-Hydrating the read and write models took longer than we had expected.
+Hydrating the read and write models takes longer than we had expected.
                   
 \onslide+<2->
                   
@@ -355,9 +355,91 @@ $\Longrightarrow$ We must cache the read and write models.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Caching Read and Write Models: Step 1}
+
+\renewcommand{\SPACE}{-0.9em}
+
+\onslide+<1->
+\begin{highlight}{1}[basicstyle=\footnotesize\ttfamily\alt<1>{}{\color{\greyedout}}]{JavaScript}
+function getGlobalEventStoreForWriting(cacheKey, callback) {
+\end{lstlisting}
+%%
+\onslide+<2->
+\vspace{\SPACE}
+\begin{lstlisting}{JavaScript}
+  const cachedStore = cache.get(cacheKey);
+  if (cachedStore) {
+    return callback(null, cachedStore);
+  }
+\end{lstlisting}
+%%
+\onslide+<3->
+\vspace{\SPACE}
+\begin{lstlisting}{JavaScript}
+  eventstore.getEventStore(url, function (err, eventStore) {
+    if (err || !eventStore) { return callback(err); }
+\end{lstlisting}
+%%
+\onslide+<4->
+\vspace{\SPACE}
+\begin{lstlisting}{JavaScript}
+    const cachedStore2 = cache.get(cacheKey);
+    if (cachedStore2) {
+      return callback(null, cachedStore2);
+    }
+\end{lstlisting}
+%%
+\onslide+<5->
+\vspace{\SPACE}
+\begin{lstlisting}{JavaScript}
+    cache.set(cacheKey, eventStore);
+    callback(null, eventStore);
+\end{lstlisting}
+%%
+\onslide+<3->
+\vspace{\SPACE}
+\begin{lstlisting}{JavaScript}
+  });
+\end{lstlisting}
+%%
+\onslide+<1->
+\vspace{\SPACE}
+\begin{lstlisting}{JavaScript}
+}
+\end{lstlisting}
+
+
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{}
+
+
+
+
+ and incrementally update them with each event.
+
+
+For this, we did not exactly follow the Event Sourcing paradigm
+
+(event store in memory, save unconditionally after each write (?))
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}[fragile]{}
+
+%\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{Analysis II}
 
-Because of parallelization due to the slow request processing, it was almost impossible for users to get through.
+Because of parallelization due to database accesses, and because of large windows of parallelization due to the slow request processing, it was almost impossible for users to get through.
 
 \onslide+<2->
                   
@@ -365,6 +447,24 @@ Because of parallelization due to the slow request processing, it was almost imp
 
 $\Longrightarrow$ We must control parallelization.
                   
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{What did we improve?}
+
+Problem: We had concurrent writes for the event store which conflicted after the first write
+
+Solution: Get rid of concurrent writes
+
+Problem. Hydrating the read and write models is slow.
+
+
+Saving must be the very last thing we do - because that's the point where we get exposed to parallelization
+
+Make sure that there is no database access between the fetching and the saving of the event store - first load everything from database, then get the store from the cache
+This way the code that updates the event store is always synchronous
+
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

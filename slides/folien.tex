@@ -43,6 +43,7 @@
 \colorlet{blockbackground}{black!10}
 \setbeamercolor{blockbackground}{bg=blockbackground}
 \definecolor[named]{strings}{HTML}{0000FF}
+
 \usepackage[final]{listings}
 \usepackage{textcomp} % for upquote in listings
 
@@ -71,6 +72,10 @@
 	upquote=true
 }
 
+\newcommand{\SPACE}{0em}
+\newcommand{\greyedout}{black!50}
+
+\newenvironment{highlight}[1]{\begin{lstlisting}[basicstyle=\footnotesize\ttfamily\alt<#1>{}{\color{\greyedout}}]{JavaScript}}{\end{lstlisting}}
 
 \begin{document}
 {
