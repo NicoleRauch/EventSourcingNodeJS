@@ -23,13 +23,18 @@ How this all began
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{}
 
-  SoCraTes Conference 2015
+\renewcommand{\SPACE}{1em}
+
+\textbf{SoCraTes Conference 2015:}
+\vspace{\SPACE}                 
+                
+11 users were incorrectly denied registration due to a bug
+\vspace{\SPACE}                 
                   
-                  11 users were incorrectly denied registration due to a bug
+We could not find out from the system who these users were
+\vspace{\SPACE}                 
                   
-                  We could not find out from the system who these users were
-                  
-                  2 or 3 complained, but the others? Gone (and probably disappointed).
+2 or 3 complained, but the others? Gone (and probably disappointed).
 
 
 \end{frame}
@@ -37,16 +42,34 @@ How this all began
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{}
 
-The bug: 2-phase registration (reservation -> registration)
+\renewcommand{\SPACE}{1em}
+
+\textbf{The bug:}
+\vspace{\SPACE}                 
+
+2-phase registration (reservation -> registration)
+\vspace{\SPACE}                 
                   
-                  reservation was made, but registration was denied
+reservation was made, but registration was denied
+\vspace{\SPACE}                 
                   
-                  reservation token only contained session id
-                  was deleted after 30 minutes
+reservation token only contained session id
+
+was deleted after 30 minutes
+\vspace{\SPACE}                 
                   
-                  -> we were unable to see who actually made the reservation
-                  
-                  How can this be improved?
+$\Longrightarrow$ we were unable to see who actually made the reservation
+\vspace{\SPACE}                 
+             
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{}
+
+\begin{center}
+\LARGE
+How can this be improved?
+\end{center}             
                   
 \end{frame}
 
@@ -73,23 +96,27 @@ Don't Drop Data!
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
+\begin{frame}[fragile]{The Classical Approach: Relational Database}
 
-Usually: Relational Database
-                  
-                  Only captures current state!
-                  
-                  No information about previous states
-                  No information why some change happened
-                  
+\onslide+<2->  
+\begin{itemize}                
+\item Only captures current state!
+\item No information about previous states
+\item No information why some change happened
+\end{itemize}
+                   
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
+\begin{frame}[fragile]{How to improve this?}
 
-How to improve this?
-                  
-                  Record everything that happened, and why.
+\renewcommand{\SPACE}{1em}
+
+\begin{enumerate}
+\item Record everything that happened, and why.
+\onslide+<2->  
+\item Derive your current application state from that log.
+\end{enumerate}         
                   
 \end{frame}
 
@@ -355,7 +382,7 @@ $\Longrightarrow$ We must cache the read and write models.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Caching Read and Write Models: Step 1}
+\begin{frame}[fragile]{Caching Read and Write Models: The Global EventStore}
 
 \renewcommand{\SPACE}{-0.9em}
 
@@ -367,7 +394,8 @@ function getGlobalEventStoreForWriting(url, callback) {
 \onslide+<2->
 \vspace{\SPACE}
 \begin{highlight}{2}
-  const cachedStore = cache.get(url);
+  const cacheKey = keyFor(url, GLOBAL_EVENT_STORE_FOR_WRITING);
+  const cachedStore = cache.get(cacheKey);
   if (cachedStore) {
     return callback(null, cachedStore);
   }
@@ -383,7 +411,7 @@ function getGlobalEventStoreForWriting(url, callback) {
 \onslide+<4->
 \vspace{\SPACE}
 \begin{highlight}{4}
-    const cachedStore2 = cache.get(url);
+    const cachedStore2 = cache.get(cacheKey);
     if (cachedStore2) {
       return callback(null, cachedStore2);
     }
@@ -392,7 +420,7 @@ function getGlobalEventStoreForWriting(url, callback) {
 \onslide+<5->
 \vspace{\SPACE}
 \begin{highlight}{5}
-    cache.set(url, eventStore);
+    cache.set(cacheKey, eventStore);
     callback(null, eventStore);
 \end{highlight}
 %%
@@ -414,74 +442,211 @@ function getGlobalEventStoreForWriting(url, callback) {
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
+\begin{frame}[fragile]{``True'' Event Sourcing and Our Adaptation}
+
+\begin{onlyenv}<1>
+\includegraphics[width=.7\textwidth]{../EventSourcing4.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+\includegraphics[width=.7\textwidth]{../EventSourcingOurStyle.pdf}
+\end{onlyenv}
 
 
+\begin{onlyenv}<3>
 
+\textbf{Important:}
 
- and incrementally update them with each event.
+\vspace{4em}
+Persisting the event store must be the \textbf{last} action to avoid parallelization!
+\end{onlyenv}
 
+\end{frame}
 
-For this, we did not exactly follow the Event Sourcing paradigm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Caching Read and Write Models: The Read Models}
 
-(event store in memory, save unconditionally after each write (?))
+\renewcommand{\SPACE}{-0.9em}
+
+\onslide+<1->
+\begin{highlight}{1}
+function getReadModel(url, key, ReadModel, callback) {
+\end{highlight}
+%%
+\onslide+<2->
+\vspace{\SPACE}
+\begin{highlight}{2}
+  const cacheKey = keyFor(url, key);
+  var cachedModel = cache.get(cacheKey);
+  if (cachedModel) {
+    return callback(null, cachedModel);
+  }
+\end{highlight}
+%%
+\onslide+<3->
+\vspace{\SPACE}
+\begin{highlight}{3}
+  eventstore.getEventStore(url, function (err, eventStore) {
+    if (err || !eventStore) { return callback(err); }
+\end{highlight}
+%%
+\onslide+<4->
+\vspace{\SPACE}
+\begin{highlight}{4}
+    var cachedModel2 = cache.get(cacheKey);
+    if (cachedModel2) {
+      return callback(null, cachedModel2);
+    }
+\end{highlight}
+%%
+\onslide+<5->
+\vspace{\SPACE}
+\begin{highlight}{5}
+    const newModel = new ReadModel(eventStore);
+    cache.set(cacheKey, newModel);
+    callback(null, newModel);
+\end{highlight}
+%%
+\onslide+<3->
+\vspace{\SPACE}
+\begin{highlight}{3}
+  });
+\end{highlight}
+%%
+\onslide+<1->
+\vspace{\SPACE}
+\begin{highlight}{1}
+}
+\end{highlight}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Caching Read and Write Models: The Write Models}
+
+\renewcommand{\SPACE}{-0.9em}
+
+\onslide+<1->
+\begin{highlight}{1}
+function getRegistrationCommandProcessor(url, callback) {
+\end{highlight}
+%%
+\onslide+<2->
+\vspace{\SPACE}
+\begin{highlight}{2}
+  getGlobalEventStoreForWriting(url, function (err, eventStore) {
+    if (err || !eventStore) { return callback(err); }
+\end{highlight}
+%%
+\onslide+<3->
+\vspace{\SPACE}
+\begin{highlight}{3}
+    getReadModel(url, REGISTRATION_READ_MODEL, RegistrationReadModel, function (err1, registrationReadModel) {
+      if (err1 || !registrationReadModel) { return callback(err1); }
+\end{highlight}
+%%
+\onslide+<4->
+\vspace{\SPACE}
+\begin{highlight}{4}
+      callback(null, new RegistrationCommandProcessor(new RegistrationWriteModel(eventStore, registrationReadModel)));
+\end{highlight}
+%%
+\onslide+<3->
+\vspace{\SPACE}
+\begin{highlight}{3}
+    });
+\end{highlight}
+%%
+\onslide+<2->
+\vspace{\SPACE}
+\begin{highlight}{2}
+  });
+\end{highlight}
+%%
+\onslide+<1->
+\vspace{\SPACE}
+\begin{highlight}{1}
+}
+\end{highlight}
+
+\onslide+<5->
+
+Another deviation: WriteModel uses ReadModel
 
 \end{frame}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}[fragile]{}
-
-%\end{frame}
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Analysis II}
+\begin{frame}[fragile]{Problem II}
 
-Because of parallelization due to database accesses, and because of large windows of parallelization due to the slow request processing, it was almost impossible for users to get through.
+\begin{itemize}
+\item Parallelization due to database accesses
+\item Large windows of parallelization due to slow request processing
+\item Result: Write conflicts
+\end{itemize}
 
 \onslide+<2->
                   
 \vspace{3em}
 
-$\Longrightarrow$ We must control parallelization.
+$\Longrightarrow$ We must eliminate write conflicts.
                   
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{What did we improve?}
+\begin{frame}[fragile]{Controlling Parallelization}
 
-Problem: We had concurrent writes for the event store which conflicted after the first write
+\begin{center}
 
-Solution: Get rid of concurrent writes
+\begin{onlyenv}<1>
+\includegraphics[width=.45\textwidth]{../EliminateWriteConflicts1.pdf}
+\end{onlyenv}
 
-Problem. Hydrating the read and write models is slow.
+\begin{onlyenv}<2>
+\includegraphics[width=.45\textwidth]{../EliminateWriteConflicts2.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<3>
+\includegraphics[width=.45\textwidth]{../EliminateWriteConflicts3.pdf}
+\end{onlyenv}
+
+\end{center}
+
+\end{frame}
 
 
-Saving must be the very last thing we do - because that's the point where we get exposed to parallelization
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Benefits}
 
-Make sure that there is no database access between the fetching and the saving of the event store - first load everything from database, then get the store from the cache
-This way the code that updates the event store is always synchronous
+Synchronous code between loading and updating the event store
 
+\onslide+<2->
+\vspace{2em}
+
+$\Longrightarrow$ No possibility for write conflicts
+
+\onslide+<3->
+\vspace{2em}
+
+$\Longrightarrow$ We can even save unconditionally
+
+\onslide+<4->
+\vspace{2em}
+
+$\Longrightarrow$ Event store is rather a backup
 
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}[fragile]{}
-
-%\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{Tradeoffs}
 
-We cannot run multiple node.js processes in parallel any more.
+We cannot run multiple node.js processes in parallel
+
+\onslide+<2->
+\vspace{2em}
+
+$\Longrightarrow$ No way of scaling
 
 \end{frame}
 
@@ -489,7 +654,10 @@ We cannot run multiple node.js processes in parallel any more.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{Thank you very much!}
 
-        Code \& slides: \url{https://github.com/NicoleRauch/...}
+        Slides: \url{https://github.com/NicoleRauch/EventSourcingNodeJS} 
+        \vspace{1em}
+
+        Code: \url{https://github.com/softwerkskammer/Agora}
         
         ~\\[1em]
         \begin{block}{Nicole Rauch}
