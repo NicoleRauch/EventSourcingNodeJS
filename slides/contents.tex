@@ -47,7 +47,7 @@ We could not find out from the system who these users were
 \textbf{The bug:}
 \vspace{\SPACE}                 
 
-2-phase registration (reservation -> registration)
+2-phase registration (reservation $\rightarrow$ registration)
 \vspace{\SPACE}                 
                   
 reservation was made, but registration was denied
@@ -98,7 +98,6 @@ Don't Drop Data!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{The Classical Approach: Relational Database}
 
-\onslide+<2->  
 \begin{itemize}                
 \item Only captures current state!
 \item No information about previous states
@@ -114,7 +113,6 @@ Don't Drop Data!
 
 \begin{enumerate}
 \item Record everything that happened, and why.
-\onslide+<2->  
 \item Derive your current application state from that log.
 \end{enumerate}         
                   
@@ -127,11 +125,9 @@ Don't Drop Data!
 \begin{onlyenv}<1>
 \includegraphics[width=\textwidth]{../EventSourcing1.pdf}
 \end{onlyenv}
-
 \begin{onlyenv}<2>
 \includegraphics[width=\textwidth]{../EventSourcing2.pdf}
 \end{onlyenv}
-
 \begin{onlyenv}<3-4>
 \includegraphics[width=\textwidth]{../EventSourcing3.pdf}
 \end{onlyenv}
@@ -143,8 +139,7 @@ Don't Drop Data!
 \small
 \begin{onlyenv}<1-3>
 Set ticket count
-\end{onlyenv}
-\begin{onlyenv}<2-3>
+\onslide+<2-3>
 \begin{itemize}
 \item Ticket count set
 \end{itemize}
@@ -160,6 +155,71 @@ Book ticket
 \end{minipage}
 
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{The Ticket Count}
+
+\begin{onlyenv}<1-3>
+The event constants:
+
+\begin{highlight}{1}
+module.exports = {
+  ROOM_QUOTA_WAS_SET: 'ROOM-QUOTA-WAS-SET',
+  // ...
+}
+\end{highlight}
+
+\onslide+<2->
+The event constructor:
+
+\begin{highlight}{2}
+roomQuotaWasSet: function (roomType, quota) {
+    return enrich({event: e.ROOM_QUOTA_WAS_SET, roomType, quota});
+}
+\end{highlight}
+
+\onslide+<3->
+\begin{highlight}{3}
+CommandProcessor.prototype.setQuotas = function (newQuotas) {
+  return roomTypes.map(
+          roomType => roomQuotaWasSet(roomType, newQuotas[roomType])
+  );
+};
+\end{highlight}
+\end{onlyenv}
+
+\begin{onlyenv}<4->
+\begin{highlight}{4}
+function ReadModel(events) {
+  this._quota = {};
+  this.process(events);
+}
+\end{highlight}
+\onslide+<5->
+\begin{highlight}{5}
+var processQuota = function (roomType, quota, event) { 
+    return event.event === e.ROOM_QUOTA_WAS_SET && 
+           event.roomType === roomType ? event.quota : quota; };
+\end{highlight}
+\onslide+<6->
+\begin{highlight}{6}
+ReadModel.prototype.process = function (events) {
+  roomTypes.forEach(roomType => {
+    this._quota[roomType] = R.reduce(R.partial(processQuota, [roomType]), 
+                            this._quota[roomType], events);
+  });
+};
+\end{highlight}
+\onslide+<7->
+\begin{highlight}{7}
+ReadModel.prototype.quotaFor = function (roomType) {
+  return this._quota[roomType];
+};
+\end{highlight}
+\end{onlyenv}
+
+\end{frame}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{Standard Event Sourcing Scenario}
@@ -265,8 +325,6 @@ Let's understand how node.js works
 
 \includegraphics[width=.7\textwidth]{../Nodejs3.pdf}
 
-\onslide+<2->
-
 \begin{itemize}
 \item Request comes in, reads \& writes data from/to DB, returns
 \item Nothing$^*$ is kept in memory between requests
@@ -279,8 +337,6 @@ Let's understand how node.js works
 \begin{frame}[fragile]{Event Sourcing Without Global State?}
 
 \includegraphics[width=.5\textwidth]{../EventSourcing4.pdf}
-
-\onslide+<2->
 
 \begin{itemize}
 \item What about the read and write models?
@@ -412,7 +468,7 @@ $\Longrightarrow$ We must cache the read and write models.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Caching Read and Write Models: The Global EventStore}
+\begin{frame}[fragile]{Caching the Global EventStore}
 
 \renewcommand{\SPACE}{-0.9em}
 
@@ -555,81 +611,22 @@ function getReadModel(url, key, ReadModel, callback) {
 
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{The Write Models}
-
-\renewcommand{\SPACE}{-0.9em}
-
-\onslide+<1->
-\begin{highlight}{1}
-function getRegistrationCommandProcessor(url, callback) {
-\end{highlight}
-%%
-\onslide+<2->
-\vspace{\SPACE}
-\begin{highlight}{2}
-  getGlobalEventStoreForWriting(url, function (err, eventStore) {
-    if (err || !eventStore) { return callback(err); }
-\end{highlight}
-%%
-\onslide+<3->
-\vspace{\SPACE}
-\begin{highlight}{3}
-    getReadModel(url, REGISTRATION_READ_MODEL, RegistrationReadModel, function (err1, registrationReadModel) {
-      if (err1 || !registrationReadModel) { return callback(err1); }
-\end{highlight}
-%%
-\onslide+<4->
-\vspace{\SPACE}
-\begin{highlight}{4}
-      callback(null, new RegistrationCommandProcessor(new RegistrationWriteModel(eventStore, registrationReadModel)));
-\end{highlight}
-%%
-\onslide+<3->
-\vspace{\SPACE}
-\begin{highlight}{3}
-    });
-\end{highlight}
-%%
-\onslide+<2->
-\vspace{\SPACE}
-\begin{highlight}{2}
-  });
-\end{highlight}
-%%
-\onslide+<1->
-\vspace{\SPACE}
-\begin{highlight}{1}
-}
-\end{highlight}
-
-\onslide+<5->
-
-Another deviation: WriteModel uses ReadModel
-
-\end{frame}
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{Problem II}
 
-\begin{itemize}
-\item Parallelization due to database accesses
-\item Large windows of parallelization due to slow request processing
-\item Result: Write conflicts
-\end{itemize}
+Parallelization leads to write conflicts
 
 \onslide+<2->
                   
 \vspace{3em}
 
-$\Longrightarrow$ We must eliminate write conflicts.
-                  
+$\Longrightarrow$ We must eliminate parallelization.
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Controlling Parallelization}
+\begin{frame}[fragile]{Eliminating Parallelization}
 
 \begin{center}
 
