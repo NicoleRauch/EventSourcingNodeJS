@@ -138,10 +138,10 @@ Don't Drop Data!
 \begin{minipage}{0.25\textwidth}
 \small
 \begin{onlyenv}<1-3>
-Set ticket count
+Set ticket quota
 \onslide+<2-3>
 \begin{itemize}
-\item Ticket count set
+\item Ticket quota set
 \end{itemize}
 \end{onlyenv}
 \begin{onlyenv}<4-5>
@@ -157,14 +157,14 @@ Book ticket
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{The Ticket Count}
+\begin{frame}[fragile]{The Ticket Quota}
 
 \begin{onlyenv}<1-3>
 The event constants:
 
 \begin{highlight}{1}
 module.exports = {
-  ROOM_QUOTA_WAS_SET: 'ROOM-QUOTA-WAS-SET',
+  TICKET_QUOTA_WAS_SET: 'TICKET-QUOTA-WAS-SET',
   // ...
 }
 \end{highlight}
@@ -173,17 +173,15 @@ module.exports = {
 The event constructor:
 
 \begin{highlight}{2}
-roomQuotaWasSet: function (roomType, quota) {
-    return enrich({event: e.ROOM_QUOTA_WAS_SET, roomType, quota});
+ticketQuotaWasSet: function (quota) {
+    return {event: e.TICKET_QUOTA_WAS_SET, quota};
 }
 \end{highlight}
 
 \onslide+<3->
 \begin{highlight}{3}
-CommandProcessor.prototype.setQuotas = function (newQuotas) {
-  return roomTypes.map(
-          roomType => roomQuotaWasSet(roomType, newQuotas[roomType])
-  );
+CommandProcessor.prototype.setQuota = function (newQuota) {
+  return roomQuotaWasSet(newQuota);
 };
 \end{highlight}
 \end{onlyenv}
@@ -191,29 +189,26 @@ CommandProcessor.prototype.setQuotas = function (newQuotas) {
 \begin{onlyenv}<4->
 \begin{highlight}{4}
 function ReadModel(events) {
-  this._quota = {};
+  this._quota = undefined;
   this.process(events);
 }
 \end{highlight}
 \onslide+<5->
 \begin{highlight}{5}
-var processQuota = function (roomType, quota, event) { 
-    return event.event === e.ROOM_QUOTA_WAS_SET && 
-           event.roomType === roomType ? event.quota : quota; };
+var processQuota = function (quota, event) { 
+  return event.event === e.ROOM_QUOTA_WAS_SET ? event.quota : quota;
+};
 \end{highlight}
 \onslide+<6->
 \begin{highlight}{6}
 ReadModel.prototype.process = function (events) {
-  roomTypes.forEach(roomType => {
-    this._quota[roomType] = R.reduce(R.partial(processQuota, [roomType]), 
-                            this._quota[roomType], events);
-  });
+  this._quota = R.reduce(processQuota, this._quota, events);
 };
 \end{highlight}
 \onslide+<7->
 \begin{highlight}{7}
-ReadModel.prototype.quotaFor = function (roomType) {
-  return this._quota[roomType];
+ReadModel.prototype.quota = function () {
+  return this._quota;
 };
 \end{highlight}
 \end{onlyenv}
@@ -490,16 +485,16 @@ function getGlobalEventStoreForWriting(url, callback) {
 \onslide+<3->
 \vspace{\SPACE}
 \begin{highlight}{3}
-  eventstore.getEventStore(url, function (err, eventStore) {
+  mongo_async.getEventStore(url, function (err, eventStore) {
     if (err || !eventStore) { return callback(err); }
 \end{highlight}
 %%
 \onslide+<4->
 \vspace{\SPACE}
 \begin{highlight}{4}
-    const cachedStore2 = cache.get(cacheKey);
-    if (cachedStore2) {
-      return callback(null, cachedStore2);
+    const cachedWhileFetching = cache.get(cacheKey);
+    if (cachedWhileFetching) {
+      return callback(null, cachedWhileFetching);
     }
 \end{highlight}
 %%
@@ -576,16 +571,16 @@ function getReadModel(url, key, ReadModel, callback) {
 \onslide+<3->
 \vspace{\SPACE}
 \begin{highlight}{3}
-  eventstore.getEventStore(url, function (err, eventStore) {
+  mongo_async.getEventStore(url, function (err, eventStore) {
     if (err || !eventStore) { return callback(err); }
 \end{highlight}
 %%
 \onslide+<4->
 \vspace{\SPACE}
 \begin{highlight}{4}
-    var cachedModel2 = cache.get(cacheKey);
-    if (cachedModel2) {
-      return callback(null, cachedModel2);
+    var cachedWhileFetching = cache.get(cacheKey);
+    if (cachedWhileFetching) {
+      return callback(null, cachedWhileFetching);
     }
 \end{highlight}
 %%
