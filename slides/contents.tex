@@ -1,4 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Overview}
+
+\begin{itemize}
+\item Why Event Sourcing?
+\item Intro to Event Sourcing
+\item Our implementation ``Take 1''
+\item Quick recap of node.js and mongo-DB
+\item Our implementation ``Take 2''
+\end{itemize}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{}
 
 \begin{center}
@@ -21,21 +34,34 @@ How this all began
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{}
+\begin{frame}[fragile]{SoCraTes Conference Registration}
 
-\renewcommand{\SPACE}{1em}
+\begin{center}
+\includegraphics[height=.4\textheight]{../SoCraTes_2015.png}
+\end{center}
 
-\textbf{SoCraTes Conference 2015:}
-\vspace{\SPACE}                 
-                
-11 users were incorrectly denied registration due to a bug
-\vspace{\SPACE}                 
-                  
-We could not find out from the system who these users were
-\vspace{\SPACE}                 
-                  
-2 or 3 complained, but the others? Gone (and probably disappointed).
+\vspace{2em}
 
+\onslide+<2->
+\begin{onlyenv}<1>
+\includegraphics[width=\textwidth]{../Registration0.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+\includegraphics[width=\textwidth]{../Registration1.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<3>
+\includegraphics[width=\textwidth]{../Registration2.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<4>
+\includegraphics[width=\textwidth]{../Registration3.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<5>
+\includegraphics[width=\textwidth]{../Registration4.pdf}
+\end{onlyenv}
 
 \end{frame}
 
@@ -44,15 +70,22 @@ We could not find out from the system who these users were
 
 \renewcommand{\SPACE}{1em}
 
-\textbf{The bug:}
+11 users encountered this bug:
+
 \vspace{\SPACE}                 
 
-2-phase registration (reservation $\rightarrow$ registration)
+\includegraphics[width=\textwidth]{../Registration5.pdf}
+
+\vspace{\SPACE}                 
+
+
+                  
+We could not find out from the system who these users were
 \vspace{\SPACE}                 
                   
-reservation was made, but registration was denied
-\vspace{\SPACE}                 
-                  
+2 or 3 complained, but the others? Gone (and probably disappointed).
+
+
 reservation token only contained session id
 
 was deleted after 30 minutes
@@ -107,15 +140,15 @@ Don't Drop Data!
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{How to improve this?}
-
-\renewcommand{\SPACE}{1em}
+\begin{frame}[fragile]{Event Sourcing Idea}
 
 \begin{enumerate}
-\item Record everything that happened, and why.
-\item Derive your current application state from that log.
+\item Record all events that happened, and why.
+\item Derive the current application state from the recorded events.
 \end{enumerate}         
-                  
+
+
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,6 +188,18 @@ Book ticket
 \end{minipage}
 
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Our Decision}
+
+\begin{itemize}
+\item Experiment with Event Sourcing
+\item Only for registration
+\item Constraint: No overbookings!
+\end{itemize}
+
+\end{frame}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{The Ticket Quota}
@@ -388,38 +433,48 @@ Reading from DB parallelized it, so more users came in and read from DB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{What was going on?}
 
-\renewcommand{\SPACE}{3em}
+\renewcommand{\SPACE}{1em}
 
 \begin{center}
 
 \begin{onlyenv}<1>
 First user was able to persist her reservation:
+\vspace{\SPACE}
 
-\includegraphics[width=.4\textwidth]{../OptimisticLocking5.pdf}
+\includegraphics[width=.6\textwidth]{../OptimisticLocking6.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<2>
 All subsequent users produced conflicts: 
+\vspace{\SPACE}
 
-\includegraphics[width=.4\textwidth]{../OptimisticLocking6.pdf}
+\includegraphics[width=.6\textwidth]{../OptimisticLocking7.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<3>
-\Large
-And retried.
+And retried...
+\vspace{\SPACE}
+
+\includegraphics[width=.6\textwidth]{../OptimisticLocking8.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<4>
-\LARGE
-And got conflicts again.
+And got conflicts again...
+\vspace{\SPACE}
+
+\includegraphics[width=.6\textwidth]{../OptimisticLocking7.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<5>
-\Huge
-And retried again.
+And retried again...
+\vspace{\SPACE}
+
+\includegraphics[width=.6\textwidth]{../OptimisticLocking8.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<6>
+\renewcommand{\SPACE}{3em}
+
 Slow hydrating on read
 \vspace{\SPACE}
 
@@ -670,6 +725,19 @@ We cannot run multiple node.js processes in parallel
 \vspace{2em}
 
 $\Longrightarrow$ No way of scaling
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Takeaways}
+
+\begin{itemize}
+\item Event Sourcing: to avoid loss of information
+\onslide+<2->
+\item Works well in Node.js, if you...
+\item ...avoid long load times
+\item ...avoid parallelization!
+\end{itemize}
 
 \end{frame}
 
