@@ -240,14 +240,14 @@ function ReadModel(events) {
 \end{highlight}
 \onslide+<5->
 \begin{highlight}{5}
-var processQuota = function (quota, event) { 
-  return event.event === e.ROOM_QUOTA_WAS_SET ? event.quota : quota;
+ReadModel.prototype.process = function (events) {
+  this._quota = R.reduce(processQuota, this._quota, events);
 };
 \end{highlight}
 \onslide+<6->
 \begin{highlight}{6}
-ReadModel.prototype.process = function (events) {
-  this._quota = R.reduce(processQuota, this._quota, events);
+var processQuota = function (quota, event) {
+  return event.event === e.ROOM_QUOTA_WAS_SET ? event.quota : quota;
 };
 \end{highlight}
 \onslide+<7->
