@@ -430,6 +430,17 @@ We can hydrate the models from the eventstore on each request
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{On Opening the Registration}
+
+Registration began...
+
+\vspace{3em}
+
+~ \hspace{10em} ... but nobody registered!
+ 
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{What was going on?}
 
 \renewcommand{\SPACE}{.6em}
@@ -539,13 +550,13 @@ $\Longrightarrow$ We must cache the read and write models.
 
 \onslide+<1->
 \begin{highlight}{1}
-function getGlobalEventStoreForWriting(url, callback) {
+function getCachedEventStore(url, callback) {
 \end{highlight}
 %%
 \onslide+<2->
 \vspace{\SPACE}
 \begin{highlight}{2}
-  const cacheKey = keyFor(url, GLOBAL_EVENT_STORE_FOR_WRITING);
+  const cacheKey = keyFor(url, EVENT_STORE);
   const cachedStore = cache.get(cacheKey);
   if (cachedStore) {
     return callback(null, cachedStore);
@@ -591,33 +602,6 @@ function getGlobalEventStoreForWriting(url, callback) {
 \end{frame}
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{``True'' Event Sourcing and Our Adaptation}
-
-\begin{center}
-
-\begin{onlyenv}<1>
-\includegraphics[width=.7\textwidth]{../EventSourcing4.pdf}
-\end{onlyenv}
-
-\begin{onlyenv}<2>
-\includegraphics[width=.7\textwidth]{../EventSourcingOurStyle.pdf}
-\end{onlyenv}
-
-
-\begin{onlyenv}<3>
-
-\textbf{Important:}
-
-\vspace{4em}
-Persisting the event store must be the \textbf{last} action to avoid parallelization!
-\end{onlyenv}
-
-\end{center}
-
-\end{frame}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{Caching the Read Models}
 
@@ -641,7 +625,7 @@ function getReadModel(url, key, ReadModel, callback) {
 \onslide+<3->
 \vspace{\SPACE}
 \begin{highlight}{3}
-  mongo_async.getEventStore(url, function (err, eventStore) {
+  getCachedEventStore(url, function (err, eventStore) {
     if (err || !eventStore) { return callback(err); }
 \end{highlight}
 %%
@@ -657,7 +641,7 @@ function getReadModel(url, key, ReadModel, callback) {
 \onslide+<5->
 \vspace{\SPACE}
 \begin{highlight}{5}
-    const newModel = new ReadModel(eventStore);
+    const newModel = new ReadModel(eventStore.events());
     cache.set(cacheKey, newModel);
     callback(null, newModel);
 \end{highlight}
@@ -690,8 +674,36 @@ $\Longrightarrow$ We must eliminate parallelization.
 
 \end{frame}
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Eliminating Parallelization}
+\begin{frame}[fragile]{``True'' Event Sourcing and Our Adaptation}
+
+\begin{center}
+
+\begin{onlyenv}<1>
+\includegraphics[width=.7\textwidth]{../EventSourcing4_0.pdf}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+\includegraphics[width=.7\textwidth]{../EventSourcingOurStyle.pdf}
+\end{onlyenv}
+
+
+\begin{onlyenv}<3>
+
+\textbf{Important:}
+
+\vspace{4em}
+Persisting the event store must be the \textbf{last} action to avoid parallelization!
+\end{onlyenv}
+
+\end{center}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Eliminating Parallelization, Part II}
 
 \begin{center}
 
