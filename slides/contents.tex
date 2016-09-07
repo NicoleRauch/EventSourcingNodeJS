@@ -34,7 +34,7 @@ How this all began
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{SoCraTes Conference Registration}
+\begin{frame}[fragile]{SoCraTes 2015 Conference Registration}
 
 \begin{center}
 \includegraphics[height=.4\textheight]{../SoCraTes_2015.png}
@@ -190,6 +190,18 @@ Don't Drop Data!
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Standard Event Sourcing Scenario}
+
+\begin{itemize}
+\item Event sourcing in application server
+\item Incremental updates of event store, write models and read models
+\item Write models must be updated synchronously
+\item Read models can be updated asynchronously
+\end{itemize}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{Our Decision}
 
 \begin{itemize}
@@ -260,16 +272,29 @@ ReadModel.prototype.quota = function () {
 
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{On Opening the Registration}
+
+\onslide+<2->
+
+Registration began...
+
+\onslide+<3->
+
+\vspace{3em}
+
+~ \hspace{10em} ... but nobody registered!
+ 
+\end{frame}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Standard Event Sourcing Scenario}
+\begin{frame}[fragile]{}
 
-\begin{itemize}
-\item Event sourcing in application server
-\item Incremental updates of event store, write models and read models
-\item Write models must be updated synchronously
-\item Read models can be updated asynchronously
-\end{itemize}
+\begin{center}
+\Huge
+What happened???
+\end{center}
 
 \end{frame}
 
@@ -395,21 +420,6 @@ We can hydrate the models from the eventstore on each request
 
 \end{frame}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{On Opening the Registration}
-
-\onslide+<2->
-
-Registration began...
-
-\onslide+<3->
-
-\vspace{3em}
-
-~ \hspace{10em} ... but nobody registered!
- 
-\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{What was going on?}
