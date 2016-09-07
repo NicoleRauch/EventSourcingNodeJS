@@ -308,27 +308,35 @@ Let's understand how node.js works
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]{Node.js}
 
+\renewcommand{\WIDTH}{\textwidth}
+
+\begin{columns}[T] % align columns
+\begin{column}{.7\textwidth}
 \begin{onlyenv}<1>
-\includegraphics[width=.7\textwidth]{../Nodejs1.pdf}
+\includegraphics[width=\WIDTH]{../Nodejs1.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<2>
-\includegraphics[width=.7\textwidth]{../Nodejs2.pdf}
+\includegraphics[width=\WIDTH]{../Nodejs2.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<3>
-\includegraphics[width=.7\textwidth]{../Nodejs3.pdf}
+\includegraphics[width=\WIDTH]{../Nodejs3.pdf}
 \end{onlyenv}
 
 \begin{onlyenv}<4>
-\includegraphics[width=.7\textwidth]{../Nodejs4.pdf}
+\includegraphics[width=\WIDTH]{../Nodejs4.pdf}
 \end{onlyenv}
-
+\end{column}
 \hfill 
-
+\begin{column}{.2\textwidth}
 \begin{tiny}
-\makebox[\textwidth][r]{\url{http://blog.mixu.net/2011/02/01/understanding-the-node-js-event-loop/}}
+\makebox[\textwidth][r]{
+\rotatebox{270}{\url{http://blog.mixu.net/2011/02/01/understanding-the-node-js-event-loop/}}
+}
 \end{tiny}
+\end{column}
+\end{columns}
 
 \end{frame}
 
